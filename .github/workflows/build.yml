@@ -2,8 +2,13 @@ name: Build Windows app
 
 # Builds the businessOS Windows .exe (installer + portable) on GitHub's
 # Windows runners. Download the results from the run's "Artifacts" section.
-# Pushing a version tag (e.g. v0.1.0) additionally publishes a GitHub Release
-# with the .exe files attached.
+#
+# A GitHub Release (with the .exe files as plain downloads) is published when
+# either:
+#   - a version tag like v0.1.0 is pushed, or
+#   - this workflow is run manually with "Publish a GitHub Release" enabled
+#     (Actions tab -> Build Windows app -> Run workflow).
+# The release is tagged with the version from package.json.
 
 on:
   push:
@@ -11,6 +16,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish a GitHub Release with the .exe files'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -48,9 +58,16 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Publish release (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Read app version
+        id: version
+        shell: bash
+        run: echo "value=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release)
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.version.outputs.value }}
+          name: businessOS v${{ steps.version.outputs.value }}
           files: release/*.exe
           generate_release_notes: true
