@@ -82,6 +82,23 @@ This produces two artifacts in `release/`:
 > Building the Windows binaries is easiest **on Windows**. Cross-building from
 > Linux/macOS is possible with Wine but not required for development.
 
+### Building in the cloud (no Windows PC needed)
+
+A GitHub Actions workflow (`.github/workflows/build.yml`) builds the Windows
+`.exe` files on GitHub's own Windows runners on every push.
+
+1. Push your branch to GitHub.
+2. Open the repo's **Actions** tab and click the latest **Build Windows app** run.
+3. Download the **`businessOS-windows`** artifact — it contains both the
+   installer and the portable `.exe`.
+
+To publish a versioned GitHub Release with the `.exe` files attached, push a tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
 ### App icon
 
 The branded icon lives at `build/icon.ico` (and `build/icon.png`) and is already

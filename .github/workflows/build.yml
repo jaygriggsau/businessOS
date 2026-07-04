@@ -1,0 +1,56 @@
+name: Build Windows app
+
+# Builds the businessOS Windows .exe (installer + portable) on GitHub's
+# Windows runners. Download the results from the run's "Artifacts" section.
+# Pushing a version tag (e.g. v0.1.0) additionally publishes a GitHub Release
+# with the .exe files attached.
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and package Windows app
+        run: npm run dist
+        env:
+          # electron-builder should not try to publish on its own; we handle
+          # releases via the upload step below.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: businessOS-windows
+          path: |
+            release/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.exe
+          generate_release_notes: true
