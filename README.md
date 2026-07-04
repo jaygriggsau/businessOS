@@ -69,11 +69,28 @@ npm run typecheck
 On (or targeting) Windows:
 
 ```bash
-npm run dist        # produces an NSIS installer in release/
+npm run dist        # builds and packages the Windows targets
 ```
 
-> Building a Windows installer is easiest **on Windows**. Cross-building from
+This produces two artifacts in `release/`:
+
+| File | What it is |
+| --- | --- |
+| `businessOS-0.1.0-setup.exe` | **Installer** — desktop + Start-menu shortcuts, uninstaller |
+| `businessOS-0.1.0-portable.exe` | **Portable** — a single self-contained `.exe`; copy anywhere (e.g. a USB stick) and run, no install |
+
+> Building the Windows binaries is easiest **on Windows**. Cross-building from
 > Linux/macOS is possible with Wine but not required for development.
+
+### App icon
+
+The branded icon lives at `build/icon.ico` (and `build/icon.png`) and is already
+committed, so builds pick it up automatically. To regenerate it (needs Python +
+Pillow — `pip install Pillow`):
+
+```bash
+python3 scripts/make_icon.py
+```
 
 The database file is created on first run at Electron's `userData` path
 (e.g. `%APPDATA%/businessOS/businessos.sqlite` on Windows). Back it up by
