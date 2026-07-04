@@ -2,8 +2,9 @@ import type { ComponentType, SVGProps } from 'react'
 import DashboardApp from '../apps/dashboard/DashboardApp'
 import CrmApp from '../apps/crm/CrmApp'
 import InvoiceApp from '../apps/invoice/InvoiceApp'
+import SocialApp from '../apps/social/SocialApp'
 import SettingsApp from '../apps/settings/SettingsApp'
-import { CrmIcon, DashboardIcon, InvoiceIcon, SettingsIcon } from './icons'
+import { CrmIcon, DashboardIcon, InvoiceIcon, SettingsIcon, SocialIcon } from './icons'
 
 export interface AppDefinition {
   id: string
@@ -44,6 +45,15 @@ export const APPS: AppDefinition[] = [
     icon: InvoiceIcon,
     accent: 'from-emerald-500 to-teal-600',
     component: InvoiceApp,
+    singleton: true
+  },
+  {
+    id: 'social',
+    name: 'Social Studio',
+    description: 'AI posts, hashtags & images',
+    icon: SocialIcon,
+    accent: 'from-pink-500 to-rose-600',
+    component: SocialApp,
     singleton: true
   },
   {

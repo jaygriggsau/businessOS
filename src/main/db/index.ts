@@ -71,6 +71,15 @@ function migrate(database: Database.Database): void {
         CREATE INDEX idx_invoice_items_invoice ON invoice_items(invoice_id);
         CREATE INDEX idx_invoices_contact ON invoices(contact_id);
       `)
+    },
+    // v2 — key/value settings (API keys, business profile)
+    (d) => {
+      d.exec(`
+        CREATE TABLE settings (
+          key   TEXT PRIMARY KEY,
+          value TEXT NOT NULL DEFAULT ''
+        );
+      `)
     }
   ]
 

@@ -1,8 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
+  AppSettings,
   BusinessApi,
   ContactInput,
-  InvoiceInput
+  InvoiceInput,
+  SocialInput
 } from '../shared/types'
 
 const api: BusinessApi = {
@@ -23,6 +25,14 @@ const api: BusinessApi = {
   },
   dashboard: {
     stats: () => ipcRenderer.invoke('dashboard:stats')
+  },
+  settings: {
+    get: () => ipcRenderer.invoke('settings:get'),
+    save: (settings: Partial<AppSettings>) => ipcRenderer.invoke('settings:save', settings)
+  },
+  social: {
+    fetchSample: (url: string) => ipcRenderer.invoke('social:fetchSample', url),
+    generate: (input: SocialInput) => ipcRenderer.invoke('social:generate', input)
   },
   system: {
     version: () => ipcRenderer.invoke('system:version'),

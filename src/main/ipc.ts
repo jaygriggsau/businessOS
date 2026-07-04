@@ -1,5 +1,5 @@
 import { app, ipcMain } from 'electron'
-import type { ContactInput, InvoiceInput } from '@shared/types'
+import type { AppSettings, ContactInput, InvoiceInput, SocialInput } from '@shared/types'
 import {
   createContact,
   deleteContact,
@@ -16,6 +16,9 @@ import {
   updateInvoice
 } from './db/invoices'
 import { getDashboardStats } from './db/dashboard'
+import { getSettings, saveSettings } from './db/settings'
+import { fetchFacebookSample } from './ai/facebook'
+import { generateSocialPost } from './ai/social'
 import { getDbPath } from './db'
 
 /**
@@ -44,6 +47,16 @@ export function registerIpcHandlers(): void {
 
   // ---- Dashboard ----
   ipcMain.handle('dashboard:stats', () => getDashboardStats())
+
+  // ---- Settings ----
+  ipcMain.handle('settings:get', () => getSettings())
+  ipcMain.handle('settings:save', (_e, settings: Partial<AppSettings>) =>
+    saveSettings(settings)
+  )
+
+  // ---- Social media generator ----
+  ipcMain.handle('social:fetchSample', (_e, url: string) => fetchFacebookSample(url))
+  ipcMain.handle('social:generate', (_e, input: SocialInput) => generateSocialPost(input))
 
   // ---- System ----
   ipcMain.handle('system:version', () => app.getVersion())

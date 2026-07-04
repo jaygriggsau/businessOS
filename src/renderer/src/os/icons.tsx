@@ -104,6 +104,43 @@ export function TrashIcon(props: IconProps) {
   )
 }
 
+export function SocialIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M3 11v2a1 1 0 0 0 1 1h3l4 3.5a.6.6 0 0 0 1-.46V6.96a.6.6 0 0 0-1-.46L7 10H4a1 1 0 0 0-1 1Z" />
+      <path d="M15.5 8.5a4 4 0 0 1 0 7" />
+      <path d="M18 6a7 7 0 0 1 0 12" />
+    </svg>
+  )
+}
+
+export function SparkleIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3l1.8 4.8L18 9.6l-4.2 1.8L12 16l-1.8-4.6L6 9.6l4.2-1.8L12 3Z" />
+      <path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8Z" />
+    </svg>
+  )
+}
+
+export function CopyIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h8" />
+    </svg>
+  )
+}
+
+export function DownloadIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3v12M7 10l5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  )
+}
+
 export function GridIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

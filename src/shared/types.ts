@@ -66,6 +66,44 @@ export interface DashboardStats {
   paidTotal: number
 }
 
+// ---- Social media post generator ----
+
+export type SocialPlatform = 'facebook' | 'instagram' | 'linkedin' | 'x'
+
+export interface SocialInput {
+  /** What the post should be about. */
+  topic: string
+  /** A sample post whose tone/voice should be matched (may be empty). */
+  sampleText: string
+  /** The URL the sample was pulled from, for reference (optional). */
+  sampleUrl: string
+  platform: SocialPlatform
+  includeImage: boolean
+}
+
+export interface SocialResult {
+  post: string
+  hashtags: string[]
+  imagePrompt: string
+  /** Data URL of the generated image, or null if none/failed. */
+  imageDataUrl: string | null
+  imageError?: string
+}
+
+export interface SampleFetchResult {
+  ok: boolean
+  text: string
+  /** Human-readable note about what happened (e.g. why it was blocked). */
+  note: string
+}
+
+/** App/business configuration persisted in the local settings table. */
+export interface AppSettings {
+  anthropicApiKey: string
+  businessName: string
+  businessIndustry: string
+}
+
 // ---- Typed IPC surface exposed on window.api via the preload bridge ----
 
 export interface BusinessApi {
@@ -86,6 +124,14 @@ export interface BusinessApi {
   }
   dashboard: {
     stats: () => Promise<DashboardStats>
+  }
+  settings: {
+    get: () => Promise<AppSettings>
+    save: (settings: Partial<AppSettings>) => Promise<AppSettings>
+  }
+  social: {
+    fetchSample: (url: string) => Promise<SampleFetchResult>
+    generate: (input: SocialInput) => Promise<SocialResult>
   }
   system: {
     version: () => Promise<string>

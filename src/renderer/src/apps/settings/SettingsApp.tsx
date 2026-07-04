@@ -1,9 +1,13 @@
+import { useEffect, useState } from 'react'
+import type { AppSettings } from '@shared/types'
 import { useAsync } from '../../lib/useAsync'
+import { Button, Field, Input } from '../../lib/ui'
 import { APPS } from '../../os/apps'
 
 export default function SettingsApp() {
   const { data: version } = useAsync(() => window.api.system.version())
   const { data: dataPath } = useAsync(() => window.api.system.dataPath())
+  const { data: settings } = useAsync(() => window.api.settings.get())
 
   return (
     <div className="h-full overflow-y-auto p-6">
@@ -18,6 +22,8 @@ export default function SettingsApp() {
           </p>
         </div>
       </header>
+
+      {settings && <BusinessSettings initial={settings} />}
 
       <Section title="About">
         <InfoRow label="Version" value={version ?? '…'} />
@@ -55,6 +61,70 @@ export default function SettingsApp() {
         </p>
       </Section>
     </div>
+  )
+}
+
+function BusinessSettings({ initial }: { initial: AppSettings }) {
+  const [form, setForm] = useState<AppSettings>(initial)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => setForm(initial), [initial])
+
+  const set = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+    setForm((f) => ({ ...f, [key]: value }))
+    setSaved(false)
+  }
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      await window.api.settings.save(form)
+      setSaved(true)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Section title="Business & AI">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2">
+          <Field label="Anthropic API key (for Social Studio)">
+            <Input
+              type="password"
+              value={form.anthropicApiKey}
+              onChange={(e) => set('anthropicApiKey', e.target.value)}
+              placeholder="sk-ant-…"
+            />
+          </Field>
+          <p className="mt-1 text-[11px] text-slate-500">
+            Get a key at console.anthropic.com. It’s stored locally on this device and only
+            used to generate your posts.
+          </p>
+        </div>
+        <Field label="Business name">
+          <Input
+            value={form.businessName}
+            onChange={(e) => set('businessName', e.target.value)}
+            placeholder="Bean & Brew Coffee"
+          />
+        </Field>
+        <Field label="Industry">
+          <Input
+            value={form.businessIndustry}
+            onChange={(e) => set('businessIndustry', e.target.value)}
+            placeholder="Coffee shop"
+          />
+        </Field>
+      </div>
+      <div className="mt-4 flex items-center justify-end gap-3">
+        {saved && <span className="text-xs text-emerald-400">Saved ✓</span>}
+        <Button variant="primary" onClick={save} disabled={saving}>
+          {saving ? 'Saving…' : 'Save settings'}
+        </Button>
+      </div>
+    </Section>
   )
 }
 
