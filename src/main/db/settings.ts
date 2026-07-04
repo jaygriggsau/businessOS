@@ -4,12 +4,16 @@ import { getDb } from './index'
 // Maps the flat AppSettings shape onto individual key/value rows.
 const KEYS: Record<keyof AppSettings, string> = {
   anthropicApiKey: 'anthropic_api_key',
+  proxyUrl: 'proxy_url',
+  proxyAccessCode: 'proxy_access_code',
   businessName: 'business_name',
   businessIndustry: 'business_industry'
 }
 
 const DEFAULTS: AppSettings = {
   anthropicApiKey: '',
+  proxyUrl: '',
+  proxyAccessCode: '',
   businessName: '',
   businessIndustry: ''
 }

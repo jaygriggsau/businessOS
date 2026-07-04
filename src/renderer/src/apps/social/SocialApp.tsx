@@ -42,7 +42,7 @@ export default function SocialApp() {
     return () => window.removeEventListener('focus', onFocus)
   }, [reload])
 
-  const hasKey = Boolean(settings?.anthropicApiKey)
+  const hasKey = Boolean(settings?.anthropicApiKey || settings?.proxyUrl)
 
   const fetchSample = async () => {
     if (!sampleUrl.trim()) return

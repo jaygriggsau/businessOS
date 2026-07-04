@@ -38,10 +38,25 @@ interface GeneratedCopy {
 }
 
 function getClient(): Anthropic {
-  const key = getSettings().anthropicApiKey.trim()
+  const settings = getSettings()
+  const proxyUrl = settings.proxyUrl.trim()
+
+  // Shared-proxy mode: route through the owner's server, which holds the real
+  // key. We send the access code as the "apiKey"; the proxy validates it and
+  // swaps in the real Anthropic key. baseURL points at the proxy root — the
+  // SDK appends /v1/messages itself.
+  if (proxyUrl) {
+    return new Anthropic({
+      baseURL: proxyUrl.replace(/\/+$/, ''),
+      apiKey: settings.proxyAccessCode.trim() || 'anonymous'
+    })
+  }
+
+  const key = settings.anthropicApiKey.trim()
   if (!key) {
     throw new Error(
-      'No Anthropic API key set. Open Settings and paste your key to enable post generation.'
+      'No API access configured. Open Settings and either paste your Anthropic key ' +
+        'or enter a shared proxy URL + access code.'
     )
   }
   return new Anthropic({ apiKey: key })

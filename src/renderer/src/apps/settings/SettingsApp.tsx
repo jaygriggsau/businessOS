@@ -86,16 +86,49 @@ function BusinessSettings({ initial }: { initial: AppSettings }) {
     }
   }
 
+  const usingProxy = Boolean(form.proxyUrl.trim())
+
   return (
     <Section title="Business & AI">
-      <div className="grid grid-cols-2 gap-4">
+      <p className="mb-3 text-xs text-slate-400">
+        Social Studio needs AI access. Use your own Anthropic key, <em>or</em> a shared proxy
+        URL your organization runs.
+      </p>
+
+      <div className="rounded-lg border border-white/5 bg-slate-800/30 p-3">
+        <p className="mb-2 text-xs font-semibold text-slate-300">Shared proxy (optional)</p>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Proxy URL">
+            <Input
+              value={form.proxyUrl}
+              onChange={(e) => set('proxyUrl', e.target.value)}
+              placeholder="https://your-proxy.onrender.com"
+            />
+          </Field>
+          <Field label="Access code">
+            <Input
+              type="password"
+              value={form.proxyAccessCode}
+              onChange={(e) => set('proxyAccessCode', e.target.value)}
+              placeholder="your-team-code"
+            />
+          </Field>
+        </div>
+        <p className="mt-1 text-[11px] text-slate-500">
+          When a proxy URL is set, the app routes through it and ignores the key below — the
+          real key stays on the server, never on this device.
+        </p>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <Field label="Anthropic API key (for Social Studio)">
+          <Field label={`Anthropic API key${usingProxy ? ' (ignored — proxy in use)' : ''}`}>
             <Input
               type="password"
               value={form.anthropicApiKey}
               onChange={(e) => set('anthropicApiKey', e.target.value)}
               placeholder="sk-ant-…"
+              disabled={usingProxy}
             />
           </Field>
           <p className="mt-1 text-[11px] text-slate-500">
