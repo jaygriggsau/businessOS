@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
+import { attachContextMenu } from './contextMenu'
 import { getDb } from './db'
 
 function createWindow(): void {
@@ -23,6 +24,8 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => mainWindow.show())
+
+  attachContextMenu(mainWindow.webContents)
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
