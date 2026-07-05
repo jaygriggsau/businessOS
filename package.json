@@ -1,6 +1,6 @@
 {
   "name": "businessos",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "An operating-system-style desktop suite for local business owners (CRM, Invoicing, and more).",
   "author": "businessOS",
   "license": "MIT",
