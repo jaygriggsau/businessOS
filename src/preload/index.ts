@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type {
   AppSettings,
   BusinessApi,
+  ChatChunk,
   ContactInput,
   DocInput,
   InvoiceInput,
@@ -48,6 +49,17 @@ const api: BusinessApi = {
   },
   writer: {
     enhance: (request: WriterRequest) => ipcRenderer.invoke('writer:enhance', request)
+  },
+  chat: {
+    history: () => ipcRenderer.invoke('chat:history'),
+    send: (requestId: string, content: string) =>
+      ipcRenderer.invoke('chat:send', requestId, content),
+    clear: () => ipcRenderer.invoke('chat:clear'),
+    onChunk: (cb: (chunk: ChatChunk) => void) => {
+      const listener = (_e: unknown, chunk: ChatChunk) => cb(chunk)
+      ipcRenderer.on('chat:chunk', listener)
+      return () => ipcRenderer.removeListener('chat:chunk', listener)
+    }
   },
   system: {
     version: () => ipcRenderer.invoke('system:version'),

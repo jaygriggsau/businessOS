@@ -92,6 +92,17 @@ function migrate(database: Database.Database): void {
           updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
       `)
+    },
+    // v4 — marketing assistant chat history
+    (d) => {
+      d.exec(`
+        CREATE TABLE chat_messages (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          role       TEXT NOT NULL,
+          content    TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+      `)
     }
   ]
 

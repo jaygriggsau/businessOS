@@ -132,6 +132,22 @@ export interface WriterRequest {
   instruction?: string
 }
 
+// ---- Marketing assistant chat ----
+
+export type ChatRole = 'user' | 'assistant'
+
+export interface ChatMessage {
+  id: number
+  role: ChatRole
+  content: string
+  createdAt: string
+}
+
+export interface ChatChunk {
+  requestId: string
+  delta: string
+}
+
 /** App/business configuration persisted in the local settings table. */
 export interface AppSettings {
   /** The user's own Anthropic API key. */
@@ -182,6 +198,14 @@ export interface BusinessApi {
   }
   writer: {
     enhance: (request: WriterRequest) => Promise<string>
+  }
+  chat: {
+    history: () => Promise<ChatMessage[]>
+    /** Send a user message; streams the reply via onChunk, resolves with the saved reply. */
+    send: (requestId: string, content: string) => Promise<ChatMessage>
+    clear: () => Promise<void>
+    /** Subscribe to streaming reply chunks. Returns an unsubscribe function. */
+    onChunk: (cb: (chunk: ChatChunk) => void) => () => void
   }
   system: {
     version: () => Promise<string>

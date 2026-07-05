@@ -4,8 +4,10 @@ import CrmApp from '../apps/crm/CrmApp'
 import InvoiceApp from '../apps/invoice/InvoiceApp'
 import SocialApp from '../apps/social/SocialApp'
 import DocsApp from '../apps/docs/DocsApp'
+import MarketingApp from '../apps/marketing/MarketingApp'
 import SettingsApp from '../apps/settings/SettingsApp'
 import {
+  ChatIcon,
   CrmIcon,
   DashboardIcon,
   DocIcon,
@@ -71,6 +73,15 @@ export const APPS: AppDefinition[] = [
     icon: DocIcon,
     accent: 'from-blue-500 to-cyan-600',
     component: DocsApp,
+    singleton: true
+  },
+  {
+    id: 'marketing',
+    name: 'Marketing Assistant',
+    description: 'Chat for custom marketing advice',
+    icon: ChatIcon,
+    accent: 'from-fuchsia-500 to-purple-600',
+    component: MarketingApp,
     singleton: true
   },
   {

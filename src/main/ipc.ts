@@ -31,9 +31,11 @@ import {
   listDocuments,
   updateDocument
 } from './db/documents'
+import { addMessage, clearMessages, listMessages } from './db/chat'
 import { fetchFacebookSample } from './ai/facebook'
 import { generateSocialPost } from './ai/social'
 import { enhanceText } from './ai/writer'
+import { generateChatReply } from './ai/chat'
 import { exportDocx, importDocx } from './docx'
 import { getDbPath } from './db'
 
@@ -89,6 +91,20 @@ export function registerIpcHandlers(): void {
 
   // ---- AI writer ----
   ipcMain.handle('writer:enhance', (_e, request: WriterRequest) => enhanceText(request))
+
+  // ---- Marketing assistant chat ----
+  ipcMain.handle('chat:history', () => listMessages())
+  ipcMain.handle('chat:clear', () => clearMessages())
+  ipcMain.handle('chat:send', async (event, requestId: string, content: string) => {
+    addMessage('user', content)
+    const history = listMessages()
+    const reply = await generateChatReply(history, (delta) => {
+      if (!event.sender.isDestroyed()) {
+        event.sender.send('chat:chunk', { requestId, delta })
+      }
+    })
+    return addMessage('assistant', reply)
+  })
 
   // ---- System ----
   ipcMain.handle('system:version', () => app.getVersion())

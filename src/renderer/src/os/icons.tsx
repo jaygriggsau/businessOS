@@ -104,6 +104,24 @@ export function TrashIcon(props: IconProps) {
   )
 }
 
+export function ChatIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5V16H5.5A1.5 1.5 0 0 1 4 14.5Z" />
+      <path d="M8.5 9h7M8.5 12h4.5" />
+    </svg>
+  )
+}
+
+export function SendIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4.5 12 20 4.5 14.5 20l-3-6.5-7-1.5Z" />
+      <path d="m11.5 13.5 3-3" />
+    </svg>
+  )
+}
+
 export function DocIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
