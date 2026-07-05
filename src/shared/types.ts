@@ -99,12 +99,8 @@ export interface SampleFetchResult {
 
 /** App/business configuration persisted in the local settings table. */
 export interface AppSettings {
-  /** Personal Anthropic key (bring-your-own-key mode). */
+  /** The user's own Anthropic API key. */
   anthropicApiKey: string
-  /** Optional shared-proxy URL. When set, it takes precedence over the key. */
-  proxyUrl: string
-  /** Access code sent to the proxy in place of a key. */
-  proxyAccessCode: string
   businessName: string
   businessIndustry: string
 }
