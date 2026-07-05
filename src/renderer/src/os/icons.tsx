@@ -104,6 +104,16 @@ export function TrashIcon(props: IconProps) {
   )
 }
 
+export function DocIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 2.5h8l5 5V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z" />
+      <path d="M13.5 2.5V8H19" />
+      <path d="M8.5 12.5h7M8.5 16h5" />
+    </svg>
+  )
+}
+
 export function SocialIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

@@ -97,6 +97,41 @@ export interface SampleFetchResult {
   note: string
 }
 
+// ---- Documents (Word editor) ----
+
+export interface Doc {
+  id: number
+  title: string
+  /** Rich-text body as HTML. */
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DocInput {
+  title: string
+  content: string
+}
+
+/** AI writing actions applied to a selection or the whole document. */
+export type WriterAction =
+  | 'improve'
+  | 'grammar'
+  | 'shorten'
+  | 'lengthen'
+  | 'professional'
+  | 'friendly'
+  | 'continue'
+  | 'summarize'
+
+export interface WriterRequest {
+  action: WriterAction
+  /** The text to transform (selection, or whole document). */
+  text: string
+  /** Optional free-form instruction for a custom rewrite. */
+  instruction?: string
+}
+
 /** App/business configuration persisted in the local settings table. */
 export interface AppSettings {
   /** The user's own Anthropic API key. */
@@ -133,6 +168,16 @@ export interface BusinessApi {
   social: {
     fetchSample: (url: string) => Promise<SampleFetchResult>
     generate: (input: SocialInput) => Promise<SocialResult>
+  }
+  documents: {
+    list: () => Promise<Doc[]>
+    get: (id: number) => Promise<Doc | null>
+    create: (input: DocInput) => Promise<Doc>
+    update: (id: number, input: Partial<DocInput>) => Promise<Doc>
+    remove: (id: number) => Promise<void>
+  }
+  writer: {
+    enhance: (request: WriterRequest) => Promise<string>
   }
   system: {
     version: () => Promise<string>

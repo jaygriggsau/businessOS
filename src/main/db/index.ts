@@ -80,6 +80,18 @@ function migrate(database: Database.Database): void {
           value TEXT NOT NULL DEFAULT ''
         );
       `)
+    },
+    // v3 — documents (rich-text Word editor)
+    (d) => {
+      d.exec(`
+        CREATE TABLE documents (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          title      TEXT NOT NULL DEFAULT 'Untitled document',
+          content    TEXT NOT NULL DEFAULT '',
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+      `)
     }
   ]
 

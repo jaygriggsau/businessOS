@@ -1,5 +1,12 @@
 import { app, ipcMain } from 'electron'
-import type { AppSettings, ContactInput, InvoiceInput, SocialInput } from '@shared/types'
+import type {
+  AppSettings,
+  ContactInput,
+  DocInput,
+  InvoiceInput,
+  SocialInput,
+  WriterRequest
+} from '@shared/types'
 import {
   createContact,
   deleteContact,
@@ -17,8 +24,16 @@ import {
 } from './db/invoices'
 import { getDashboardStats } from './db/dashboard'
 import { getSettings, saveSettings } from './db/settings'
+import {
+  createDocument,
+  deleteDocument,
+  getDocument,
+  listDocuments,
+  updateDocument
+} from './db/documents'
 import { fetchFacebookSample } from './ai/facebook'
 import { generateSocialPost } from './ai/social'
+import { enhanceText } from './ai/writer'
 import { getDbPath } from './db'
 
 /**
@@ -57,6 +72,18 @@ export function registerIpcHandlers(): void {
   // ---- Social media generator ----
   ipcMain.handle('social:fetchSample', (_e, url: string) => fetchFacebookSample(url))
   ipcMain.handle('social:generate', (_e, input: SocialInput) => generateSocialPost(input))
+
+  // ---- Documents ----
+  ipcMain.handle('documents:list', () => listDocuments())
+  ipcMain.handle('documents:get', (_e, id: number) => getDocument(id))
+  ipcMain.handle('documents:create', (_e, input: DocInput) => createDocument(input))
+  ipcMain.handle('documents:update', (_e, id: number, input: Partial<DocInput>) =>
+    updateDocument(id, input)
+  )
+  ipcMain.handle('documents:remove', (_e, id: number) => deleteDocument(id))
+
+  // ---- AI writer ----
+  ipcMain.handle('writer:enhance', (_e, request: WriterRequest) => enhanceText(request))
 
   // ---- System ----
   ipcMain.handle('system:version', () => app.getVersion())

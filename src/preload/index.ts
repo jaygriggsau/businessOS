@@ -3,8 +3,10 @@ import type {
   AppSettings,
   BusinessApi,
   ContactInput,
+  DocInput,
   InvoiceInput,
-  SocialInput
+  SocialInput,
+  WriterRequest
 } from '../shared/types'
 
 const api: BusinessApi = {
@@ -33,6 +35,16 @@ const api: BusinessApi = {
   social: {
     fetchSample: (url: string) => ipcRenderer.invoke('social:fetchSample', url),
     generate: (input: SocialInput) => ipcRenderer.invoke('social:generate', input)
+  },
+  documents: {
+    list: () => ipcRenderer.invoke('documents:list'),
+    get: (id) => ipcRenderer.invoke('documents:get', id),
+    create: (input: DocInput) => ipcRenderer.invoke('documents:create', input),
+    update: (id, input) => ipcRenderer.invoke('documents:update', id, input),
+    remove: (id) => ipcRenderer.invoke('documents:remove', id)
+  },
+  writer: {
+    enhance: (request: WriterRequest) => ipcRenderer.invoke('writer:enhance', request)
   },
   system: {
     version: () => ipcRenderer.invoke('system:version'),
