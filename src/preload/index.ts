@@ -41,7 +41,10 @@ const api: BusinessApi = {
     get: (id) => ipcRenderer.invoke('documents:get', id),
     create: (input: DocInput) => ipcRenderer.invoke('documents:create', input),
     update: (id, input) => ipcRenderer.invoke('documents:update', id, input),
-    remove: (id) => ipcRenderer.invoke('documents:remove', id)
+    remove: (id) => ipcRenderer.invoke('documents:remove', id),
+    importDocx: () => ipcRenderer.invoke('documents:importDocx'),
+    exportDocx: (html: string, title: string) =>
+      ipcRenderer.invoke('documents:exportDocx', html, title)
   },
   writer: {
     enhance: (request: WriterRequest) => ipcRenderer.invoke('writer:enhance', request)

@@ -85,6 +85,13 @@
   color: #2044ec;
   text-decoration: underline;
 }
+.doc-content blockquote {
+  margin: 0 0 0.7em;
+  padding-left: 1em;
+  border-left: 3px solid #cbd5e1;
+  color: #475569;
+  font-style: italic;
+}
 
 /* Thin, unobtrusive scrollbars that suit the dark OS theme. */
 ::-webkit-scrollbar {

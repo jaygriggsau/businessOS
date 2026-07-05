@@ -14,6 +14,25 @@ const AI_ACTIONS: { action: WriterAction; label: string }[] = [
   { action: 'summarize', label: 'Summarize' }
 ]
 
+const FONTS = [
+  { label: 'Font', value: '' },
+  { label: 'Arial', value: 'Arial, sans-serif' },
+  { label: 'Calibri', value: 'Calibri, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Times New Roman', value: "'Times New Roman', serif" },
+  { label: 'Courier New', value: "'Courier New', monospace" },
+  { label: 'Verdana', value: 'Verdana, sans-serif' }
+]
+
+const SIZES = [
+  { label: 'Size', value: '' },
+  { label: 'Small', value: '2' },
+  { label: 'Normal', value: '3' },
+  { label: 'Large', value: '5' },
+  { label: 'X-Large', value: '6' },
+  { label: 'Huge', value: '7' }
+]
+
 export default function DocEditor({
   doc,
   onChanged,
@@ -30,12 +49,18 @@ export default function DocEditor({
   const [words, setWords] = useState(0)
   const [aiBusy, setAiBusy] = useState<WriterAction | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [note, setNote] = useState<string | null>(null)
 
-  // Load the document body once when this editor mounts (keyed by doc.id).
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.innerHTML = doc.content
       setWords(countWords(editorRef.current.innerText))
+    }
+    // Prefer inline CSS so colours/sizes/fonts survive the .docx export.
+    try {
+      document.execCommand('styleWithCSS', false, 'true')
+    } catch {
+      /* not supported — ignore */
     }
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
@@ -61,11 +86,15 @@ export default function DocEditor({
     scheduleSave()
   }
 
-  // Formatting commands keep the editor focused via preventDefault on mousedown.
   const exec = (command: string, value?: string) => {
     document.execCommand(command, false, value)
     editorRef.current?.focus()
     onEditorInput()
+  }
+
+  const promptLink = () => {
+    const url = window.prompt('Link URL', 'https://')
+    if (url) exec('createLink', url)
   }
 
   const runAI = async (action: WriterAction) => {
@@ -74,10 +103,7 @@ export default function DocEditor({
 
     const sel = window.getSelection()
     const hasSelection =
-      !!sel &&
-      sel.rangeCount > 0 &&
-      !sel.isCollapsed &&
-      editor.contains(sel.anchorNode)
+      !!sel && sel.rangeCount > 0 && !sel.isCollapsed && editor.contains(sel.anchorNode)
     const selectedText = hasSelection ? sel!.toString() : ''
     const savedRange = hasSelection ? sel!.getRangeAt(0).cloneRange() : null
     const wholeText = editor.innerText
@@ -92,7 +118,6 @@ export default function DocEditor({
     setError(null)
     try {
       const result = await window.api.writer.enhance({ action, text })
-
       editor.focus()
       if (action === 'continue') {
         placeCaretAtEnd(editor)
@@ -114,20 +139,19 @@ export default function DocEditor({
     }
   }
 
-  const exportWord = () => {
-    const body = editorRef.current?.innerHTML ?? ''
-    const safeTitle = escapeHtml(title || 'document')
-    const html =
-      `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" ` +
-      `xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">` +
-      `<head><meta charset="utf-8"><title>${safeTitle}</title></head><body>${body}</body></html>`
-    const blob = new Blob(['﻿', html], { type: 'application/msword' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${(title || 'document').replace(/[^\w\-]+/g, '_')}.doc`
-    a.click()
-    URL.revokeObjectURL(url)
+  const exportDocx = async () => {
+    try {
+      const path = await window.api.documents.exportDocx(
+        editorRef.current?.innerHTML ?? '',
+        title
+      )
+      if (path) {
+        setNote(`Exported to ${path}`)
+        setTimeout(() => setNote(null), 5000)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Export failed.')
+    }
   }
 
   const remove = async () => {
@@ -140,7 +164,7 @@ export default function DocEditor({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header: title + actions */}
+      {/* Header */}
       <div className="flex items-center gap-3 border-b border-white/5 px-4 py-2.5">
         <input
           value={title}
@@ -154,8 +178,8 @@ export default function DocEditor({
         <span className="shrink-0 text-[11px] text-slate-500">
           {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ''}
         </span>
-        <Button variant="secondary" onClick={exportWord} title="Export to Word (.doc)">
-          <DownloadIcon width={15} height={15} /> Word
+        <Button variant="secondary" onClick={exportDocx} title="Export to Word (.docx)">
+          <DownloadIcon width={15} height={15} /> Export .docx
         </Button>
         <Button variant="ghost" onClick={remove} title="Delete document">
           <TrashIcon width={15} height={15} />
@@ -164,16 +188,50 @@ export default function DocEditor({
 
       {/* Formatting toolbar */}
       <div className="flex flex-wrap items-center gap-1 border-b border-white/5 px-4 py-1.5">
+        <FmtButton label="↶" title="Undo" onClick={() => exec('undo')} />
+        <FmtButton label="↷" title="Redo" onClick={() => exec('redo')} />
+        <Divider />
+        <ToolSelect
+          options={FONTS}
+          title="Font"
+          onChange={(v) => v && exec('fontName', v)}
+          width="w-28"
+        />
+        <ToolSelect
+          options={SIZES}
+          title="Font size"
+          onChange={(v) => v && exec('fontSize', v)}
+          width="w-20"
+        />
+        <Divider />
         <FmtButton label="B" title="Bold" bold onClick={() => exec('bold')} />
         <FmtButton label="I" title="Italic" italic onClick={() => exec('italic')} />
         <FmtButton label="U" title="Underline" underline onClick={() => exec('underline')} />
+        <FmtButton label="S" title="Strikethrough" strike onClick={() => exec('strikeThrough')} />
+        <ColorButton label="A" title="Text colour" onColor={(c) => exec('foreColor', c)} />
+        <ColorButton
+          label="🖍"
+          title="Highlight"
+          defaultColor="#fff59d"
+          onColor={(c) => exec('hiliteColor', c)}
+        />
         <Divider />
         <FmtButton label="H1" title="Heading 1" onClick={() => exec('formatBlock', 'H1')} />
         <FmtButton label="H2" title="Heading 2" onClick={() => exec('formatBlock', 'H2')} />
         <FmtButton label="¶" title="Paragraph" onClick={() => exec('formatBlock', 'P')} />
+        <FmtButton label="❝" title="Quote" onClick={() => exec('formatBlock', 'BLOCKQUOTE')} />
         <Divider />
         <FmtButton label="•" title="Bulleted list" onClick={() => exec('insertUnorderedList')} />
         <FmtButton label="1." title="Numbered list" onClick={() => exec('insertOrderedList')} />
+        <FmtButton label="⇤" title="Decrease indent" onClick={() => exec('outdent')} />
+        <FmtButton label="⇥" title="Increase indent" onClick={() => exec('indent')} />
+        <Divider />
+        <FmtButton label="⯇" title="Align left" onClick={() => exec('justifyLeft')} />
+        <FmtButton label="≡" title="Align centre" onClick={() => exec('justifyCenter')} />
+        <FmtButton label="⯈" title="Align right" onClick={() => exec('justifyRight')} />
+        <Divider />
+        <FmtButton label="🔗" title="Insert link" onClick={promptLink} />
+        <FmtButton label="⌫" title="Clear formatting" onClick={() => exec('removeFormat')} />
       </div>
 
       {/* AI toolbar */}
@@ -199,9 +257,15 @@ export default function DocEditor({
         <span className="ml-auto text-[11px] text-slate-500">Select text, then pick an action</span>
       </div>
 
-      {error && (
-        <div className="border-b border-red-500/20 bg-red-500/10 px-4 py-2 text-xs text-red-200">
-          {error}
+      {(error || note) && (
+        <div
+          className={`border-b px-4 py-2 text-xs ${
+            error
+              ? 'border-red-500/20 bg-red-500/10 text-red-200'
+              : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+          }`}
+        >
+          {error ?? note}
         </div>
       )}
 
@@ -214,7 +278,7 @@ export default function DocEditor({
             contentEditable
             suppressContentEditableWarning
             spellCheck
-            data-placeholder="Start writing, or paste text and polish it with AI…"
+            data-placeholder="Start writing, import a .docx, or paste text and polish it with AI…"
             onInput={onEditorInput}
           />
         </div>
@@ -235,7 +299,8 @@ function FmtButton({
   onClick,
   bold,
   italic,
-  underline
+  underline,
+  strike
 }: {
   label: string
   title: string
@@ -243,6 +308,7 @@ function FmtButton({
   bold?: boolean
   italic?: boolean
   underline?: boolean
+  strike?: boolean
 }) {
   return (
     <button
@@ -251,10 +317,75 @@ function FmtButton({
       onClick={onClick}
       className={`grid h-7 min-w-[28px] place-items-center rounded-md px-1.5 text-xs text-slate-200 transition hover:bg-white/10 ${
         bold ? 'font-bold' : ''
-      } ${italic ? 'italic' : ''} ${underline ? 'underline' : ''}`}
+      } ${italic ? 'italic' : ''} ${underline ? 'underline' : ''} ${
+        strike ? 'line-through' : ''
+      }`}
     >
       {label}
     </button>
+  )
+}
+
+function ToolSelect({
+  options,
+  title,
+  onChange,
+  width
+}: {
+  options: { label: string; value: string }[]
+  title: string
+  onChange: (value: string) => void
+  width: string
+}) {
+  return (
+    <select
+      title={title}
+      defaultValue=""
+      onMouseDown={(e) => {
+        // Preserve the editor selection while the menu is interacted with.
+        // (Chromium keeps it; this just avoids stealing focus early.)
+        void e
+      }}
+      onChange={(e) => {
+        onChange(e.target.value)
+        e.currentTarget.selectedIndex = 0
+      }}
+      className={`h-7 ${width} rounded-md border border-white/10 bg-slate-800/70 px-1 text-xs text-slate-200 outline-none`}
+    >
+      {options.map((o) => (
+        <option key={o.label} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+function ColorButton({
+  label,
+  title,
+  onColor,
+  defaultColor = '#111827'
+}: {
+  label: string
+  title: string
+  onColor: (color: string) => void
+  defaultColor?: string
+}) {
+  return (
+    <label
+      title={title}
+      className="relative grid h-7 min-w-[28px] cursor-pointer place-items-center rounded-md px-1.5 text-xs text-slate-200 hover:bg-white/10"
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      {label}
+      <input
+        type="color"
+        defaultValue={defaultColor}
+        onChange={(e) => onColor(e.target.value)}
+        className="absolute inset-0 cursor-pointer opacity-0"
+      />
+    </label>
   )
 }
 
@@ -288,7 +419,6 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
-/** Turn plain text (with blank-line paragraph breaks) into simple HTML. */
 function toParagraphs(text: string): string {
   return text
     .split(/\n{2,}/)

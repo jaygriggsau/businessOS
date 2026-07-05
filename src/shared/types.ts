@@ -175,6 +175,10 @@ export interface BusinessApi {
     create: (input: DocInput) => Promise<Doc>
     update: (id: number, input: Partial<DocInput>) => Promise<Doc>
     remove: (id: number) => Promise<void>
+    /** Import a .docx via a native file dialog. Null if cancelled. */
+    importDocx: () => Promise<{ title: string; content: string } | null>
+    /** Export HTML to a .docx via a native save dialog. Returns saved path or null. */
+    exportDocx: (html: string, title: string) => Promise<string | null>
   }
   writer: {
     enhance: (request: WriterRequest) => Promise<string>

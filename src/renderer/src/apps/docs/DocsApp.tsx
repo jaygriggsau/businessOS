@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Doc } from '@shared/types'
 import { useAsync } from '../../lib/useAsync'
 import { Button, EmptyState } from '../../lib/ui'
-import { DocIcon, PlusIcon, SearchIcon } from '../../os/icons'
+import { DocIcon, DownloadIcon, PlusIcon, SearchIcon } from '../../os/icons'
 import DocEditor from './DocEditor'
 
 export default function DocsApp() {
@@ -28,6 +28,14 @@ export default function DocsApp() {
     setSelectedId(doc.id)
   }
 
+  const importDoc = async () => {
+    const imported = await window.api.documents.importDocx()
+    if (!imported) return
+    const doc = await window.api.documents.create(imported)
+    await reload()
+    setSelectedId(doc.id)
+  }
+
   return (
     <div className="flex h-full">
       {/* Document list */}
@@ -44,6 +52,9 @@ export default function DocsApp() {
           </div>
           <Button variant="primary" className="w-full" onClick={createNew}>
             <PlusIcon width={16} height={16} /> New document
+          </Button>
+          <Button variant="secondary" className="mt-2 w-full" onClick={importDoc}>
+            <DownloadIcon width={15} height={15} /> Import .docx
           </Button>
         </div>
 

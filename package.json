@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
-    "better-sqlite3": "^11.8.1"
+    "better-sqlite3": "^11.8.1",
+    "html-to-docx": "^1.8.0",
+    "mammoth": "^1.12.0"
   },
   "devDependencies": {
     "@electron-toolkit/preload": "^3.0.1",

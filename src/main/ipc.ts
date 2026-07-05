@@ -34,6 +34,7 @@ import {
 import { fetchFacebookSample } from './ai/facebook'
 import { generateSocialPost } from './ai/social'
 import { enhanceText } from './ai/writer'
+import { exportDocx, importDocx } from './docx'
 import { getDbPath } from './db'
 
 /**
@@ -81,6 +82,10 @@ export function registerIpcHandlers(): void {
     updateDocument(id, input)
   )
   ipcMain.handle('documents:remove', (_e, id: number) => deleteDocument(id))
+  ipcMain.handle('documents:importDocx', () => importDocx())
+  ipcMain.handle('documents:exportDocx', (_e, html: string, title: string) =>
+    exportDocx(html, title)
+  )
 
   // ---- AI writer ----
   ipcMain.handle('writer:enhance', (_e, request: WriterRequest) => enhanceText(request))
